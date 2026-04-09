@@ -7,8 +7,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/servicos")
-public class ServicoController {
 
+public class ServicoController {
     private final ServicoService servicoService;
 
     public ServicoController(ServicoService servicoService) {
