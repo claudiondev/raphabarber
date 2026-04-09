@@ -6,6 +6,7 @@ import lombok.Data;
 @Entity // Transforma a classe em uma tabela no banco de dados
 @Table(name = "servicos") // Define o nome da tabela no MySQL
 @Data // Cria Getters e Setters automaticamente
+
 public class Servico {
 
     @Id
