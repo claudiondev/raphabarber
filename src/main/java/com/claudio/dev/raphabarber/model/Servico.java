@@ -2,6 +2,7 @@ package com.claudio.dev.raphabarber.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Entity // Transforma a classe em uma tabela no banco de dados
 @Table(name = "servicos") // Define o nome da tabela no MySQL
@@ -17,6 +18,11 @@ public class Servico {
     private String nome;
 
     @Column(nullable = false)
-
     private Integer duracaoMinutos;
+
+    @Column(nullable = false)
+    private BigDecimal preco; // Preço do serviço em reais
+
+    @Column(length = 500)
+    private String descricao; // Descrição opcional do serviço
 }
