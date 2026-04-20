@@ -19,7 +19,7 @@ public class AgendamentoService {
     }
 
     /**
-     * Lista todos os agendamentos ativos (não cancelados)
+     * Lista todos os agendamentos ativos (no cancelados)
      */
     public List<Agendamento> listarTodos() {
         return agendamentoRepository.findAtivos();
@@ -30,23 +30,23 @@ public class AgendamentoService {
      */
     public Agendamento buscarPorId(Long id) {
         return agendamentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado com ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Agendamento no encontrado com ID: " + id));
     }
 
     /**
-     * Cria um novo agendamento com validações
+     * Cria um novo agendamento com validaes
      */
     public Agendamento criarAgendamento(Agendamento agendamento) {
-        // Validar se a data é no futuro
+        // Validar se a data  no futuro
         validarDataFutura(agendamento.getDataHora());
 
-        // Validar se o horário está disponível
+        // Validar se o horrio est disponvel
         validarDisponibilidade(agendamento.getDataHora());
 
         // Validar cliente
         validarCliente(agendamento.getCliente());
 
-        // Validar serviço
+        // Validar servio
         validarServico(agendamento.getServico());
 
         return agendamentoRepository.save(agendamento);
@@ -58,8 +58,8 @@ public class AgendamentoService {
     public Agendamento atualizarAgendamento(Long id, Agendamento agendamentoAtualizado) {
         Agendamento agendamento = buscarPorId(id);
 
-        // Se mudou a data/hora, validar
-        if (!agendamento.getDataHora().equals(agendamentoAtualizado.getDataHora())) {
+        // Se mudou a data/hora, validar (Adicionada checagem de nulo para evitar erro na setinha do Admin)
+        if (agendamentoAtualizado.getDataHora() != null && !agendamento.getDataHora().equals(agendamentoAtualizado.getDataHora())) {
             validarDataFutura(agendamentoAtualizado.getDataHora());
             validarDisponibilidade(agendamentoAtualizado.getDataHora());
             agendamento.setDataHora(agendamentoAtualizado.getDataHora());
@@ -83,42 +83,42 @@ public class AgendamentoService {
     }
 
     /**
-     * Lista agendamentos de um cliente específico
+     * Lista agendamentos de um cliente especfico
      */
     public List<Agendamento> listarAgendamentosDoCliente(Usuario cliente) {
         return agendamentoRepository.findByCliente(cliente);
     }
 
     /**
-     * Lista agendamentos de um dia específico (agenda diária do Rapha)
+     * Lista agendamentos de um dia especfico (agenda diria do Rapha)
      */
     public List<Agendamento> listarAgendamentosDoDia(LocalDate data) {
         return agendamentoRepository.findByData(data);
     }
 
     /**
-     * Lista agendamentos do cliente em um período
+     * Lista agendamentos do cliente em um perodo
      */
     public List<Agendamento> listarAgendamentosDoClientePorPeriodo(Usuario cliente, LocalDate dataInicio, LocalDate dataFim) {
         return agendamentoRepository.findByClienteAndPeriodo(cliente, dataInicio, dataFim);
     }
 
     /**
-     * Valida se a data é no futuro
+     * Valida se a data  no futuro
      */
     private void validarDataFutura(LocalDateTime dataHora) {
         if (dataHora.isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Não é permitido agendar em data/hora passada!");
+            throw new RuntimeException("No  permitido agendar em data/hora passada!");
         }
     }
 
     /**
-     * Valida se o horário está disponível (sem conflito)
+     * Valida se o horrio est disponvel (sem conflito)
      */
     private void validarDisponibilidade(LocalDateTime dataHora) {
         boolean existe = agendamentoRepository.existsAgendamentoNoHorario(dataHora);
         if (existe) {
-            throw new RuntimeException("Este horário já está ocupado!");
+            throw new RuntimeException("Este horrio j est ocupado!");
         }
     }
 
@@ -127,16 +127,16 @@ public class AgendamentoService {
      */
     private void validarCliente(Usuario cliente) {
         if (cliente == null || cliente.getId() == null) {
-            throw new RuntimeException("Cliente inválido!");
+            throw new RuntimeException("Cliente invlido!");
         }
     }
 
     /**
-     * Valida se o serviço existe
+     * Valida se o servio existe
      */
     private void validarServico(com.claudio.dev.raphabarber.model.Servico servico) {
         if (servico == null || servico.getId() == null) {
-            throw new RuntimeException("Serviço inválido!");
+            throw new RuntimeException("Servio invlido!");
         }
     }
 }
