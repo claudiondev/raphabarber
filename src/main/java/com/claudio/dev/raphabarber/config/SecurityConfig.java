@@ -1,5 +1,4 @@
 package com.claudio.dev.raphabarber.config;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,7 +17,6 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -41,6 +39,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/servicos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/servicos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/servicos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/portfolio/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/portfolio/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/portfolio/**").hasRole("ADMIN")
                         .requestMatchers("/agendamentos/**").authenticated()
                         .anyRequest().authenticated()
                 )
