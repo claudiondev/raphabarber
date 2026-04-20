@@ -2,6 +2,7 @@ package com.claudio.dev.raphabarber.controller;
 
 import com.claudio.dev.raphabarber.model.Servico;
 import com.claudio.dev.raphabarber.service.ServicoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,20 +17,12 @@ public class ServicoController {
         this.servicoService = servicoService;
     }
 
-    /**
-     * Lista todos os serviços
-     * GET /servicos
-     */
     @GetMapping
     public ResponseEntity<List<Servico>> listarTodos() {
         List<Servico> servicos = servicoService.listarTodos();
         return ResponseEntity.ok(servicos);
     }
 
-    /**
-     * Busca um serviço por ID
-     * GET /servicos/{id}
-     */
     @GetMapping("/{id}")
     public ResponseEntity<Servico> buscarPorId(@PathVariable Long id) {
         try {
@@ -40,18 +33,9 @@ public class ServicoController {
         }
     }
 
-    /**
-     * Cria um novo serviço
-     * POST /servicos
-     * {
-     *   "nome": "Corte de Cabelo",
-     *   "duracaoMinutos": 30,
-     *   "preco": 50.00,
-     *   "descricao": "Corte clássico com desenho"
-     * }
-     */
+    // Body: { "nome": "Corte de Cabelo", "duracaoMinutos": 30, "preco": 50.00, "descricao": "..." }
     @PostMapping
-    public ResponseEntity<?> criarServico(@RequestBody Servico servico) {
+    public ResponseEntity<?> criarServico(@Valid @RequestBody Servico servico) {
         try {
             Servico novoServico = servicoService.criarServico(servico);
             return ResponseEntity.status(HttpStatus.CREATED).body(novoServico);
@@ -60,10 +44,7 @@ public class ServicoController {
         }
     }
 
-    /**
-     * Atualiza um serviço existente
-     * PUT /servicos/{id}
-     */
+    // update parcial: só altera os campos enviados no body, por isso não usa @Valid aqui
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizarServico(
             @PathVariable Long id,
@@ -76,10 +57,6 @@ public class ServicoController {
         }
     }
 
-    /**
-     * Deleta um serviço
-     * DELETE /servicos/{id}
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarServico(@PathVariable Long id) {
         try {

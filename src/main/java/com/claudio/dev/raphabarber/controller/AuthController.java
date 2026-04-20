@@ -3,6 +3,9 @@ import com.claudio.dev.raphabarber.model.UserRole;
 import com.claudio.dev.raphabarber.model.Usuario;
 import com.claudio.dev.raphabarber.repository.UsuarioRepository;
 import com.claudio.dev.raphabarber.service.JwtService;
+import com.claudio.dev.raphabarber.service.RateLimiterService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,22 +24,32 @@ public class AuthController {
     private JwtService jwtService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RateLimiterService rateLimiterService;
 
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
+    public ResponseEntity<?> registrar(@Valid @RequestBody Usuario usuario, HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        if (rateLimiterService.excedeuLimite("registrar:" + ip)) {
+            return ResponseEntity.status(429).body(Map.of("erro", "Muitas tentativas. Tente novamente em alguns minutos."));
+        }
+
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("erro", "E-mail já cadastrado!"));
         }
-        if (usuario.getRole() == null) {
-            usuario.setRole(UserRole.CLIENTE);
-        }
+        usuario.setRole(UserRole.CLIENTE);
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuarioRepository.save(usuario);
         return ResponseEntity.ok(Map.of("mensagem", "Usuário registrado com sucesso!"));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+    public ResponseEntity<?> login(@RequestBody Usuario usuario, HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        if (rateLimiterService.excedeuLimite("login:" + ip)) {
+            return ResponseEntity.status(429).body(Map.of("erro", "Muitas tentativas. Tente novamente em alguns minutos."));
+        }
+
         Usuario encontrado = usuarioRepository.findByEmail(usuario.getEmail())
                 .orElse(null);
         if (encontrado == null || !passwordEncoder.matches(usuario.getSenha(), encontrado.getSenha())) {

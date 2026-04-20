@@ -19,6 +19,10 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a WHERE a.status != 'CANCELADO'")
     List<Agendamento> findAtivos();
 
+    // Mesmo filtro de findAtivos(), restrito a um cliente
+    @Query("SELECT a FROM Agendamento a WHERE a.cliente = :cliente AND a.status != 'CANCELADO'")
+    List<Agendamento> findAtivosDoCliente(@Param("cliente") Usuario cliente);
+
     // Buscar agendamentos dentro de um intervalo de data
     @Query("SELECT a FROM Agendamento a WHERE DATE(a.dataHora) = :data AND a.status != 'CANCELADO' ORDER BY a.dataHora")
     List<Agendamento> findByData(@Param("data") LocalDate data);

@@ -1,5 +1,10 @@
 package com.claudio.dev.raphabarber.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,8 +21,12 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank(message = "O e-mail é obrigatório")
+    @Email(message = "E-mail inválido")
     @Column(unique = true, nullable = false)
     private String email;
+    @NotBlank(message = "A senha é obrigatória")
+    @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
     private String senha;
     private String codigoRecuperacao;
     @Enumerated(EnumType.STRING)
@@ -39,6 +48,8 @@ public class Usuario implements UserDetails {
         this.email = email;
     }
 
+    // WRITE_ONLY: aceita no login/registro, mas nunca aparece na resposta (mesmo aninhado, ex: Agendamento.cliente)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getSenha() {
         return senha;
     }
@@ -47,6 +58,7 @@ public class Usuario implements UserDetails {
         this.senha = senha;
     }
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getCodigoRecuperacao() {
         return codigoRecuperacao;
     }
@@ -65,14 +77,14 @@ public class Usuario implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == UserRole.ADMIN) {
-            // Se for o Rapha, ele tem acesso de Admin e também pode fazer coisas de Cliente (como agendar pra ele mesmo)
+            // admin também acumula a role de cliente (ex: pode agendar para si mesmo)
             return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_CLIENTE"));
         }
-        // Se for um cliente normal, só recebe a chave de cliente
         return List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"));
     }
 
     @Override
+    @JsonIgnore
     public String getPassword() {
         return senha;
     }

@@ -50,13 +50,17 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://localhost:*}")
+    private String corsAllowedOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:*",
-                "https://*.vercel.app"
-        ));
+        // domínio exato de produção vem de CORS_ALLOWED_ORIGINS (ex: https://raphabarber.vercel.app) -
+        // sem wildcard "*.vercel.app", que permitia qualquer projeto Vercel de terceiros chamar a API autenticado
+        configuration.setAllowedOriginPatterns(Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);

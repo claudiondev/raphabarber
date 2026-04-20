@@ -3,10 +3,13 @@ package com.claudio.dev.raphabarber.service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.Objects;
 
 @Service
 public class JwtService {
@@ -14,13 +17,25 @@ public class JwtService {
    @org.springframework.beans.factory.annotation.Value("${api.security.token.secret}")
    private String secret;
 
-   private java.security.Key getChaveAssinatura() {
-       return io.jsonwebtoken.security.Keys.hmacShaKeyFor(secret.getBytes());
+   @PostConstruct
+   private void validarChave() {
+       if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+           throw new IllegalStateException("api.security.token.secret precisa ter no mínimo 32 bytes (256 bits)");
+       }
    }
+
+   private java.security.Key getChaveAssinatura() {
+       return io.jsonwebtoken.security.Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+   }
+
+    private static final String ISSUER = "raphabarber-api";
+    private static final String TIPO_ACCESS = "access";
 
     public String gerarToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
+                .setIssuer(ISSUER)
+                .claim("type", TIPO_ACCESS)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date (System.currentTimeMillis() + 86400000))
                 .signWith(getChaveAssinatura())
@@ -29,44 +44,28 @@ public class JwtService {
     }
 
     public String extrairEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getChaveAssinatura())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return extractSubject(token);
     }
 
-     public boolean validarToken(String token, String email) {return extrairEmail(token).equals(email); }
+     public boolean validarToken(String token, String email) {return Objects.equals(extrairEmail(token), email); }
 
-    /**
-     * Extrai o subject (email) do token
-     */
+    // retorna null se o token for inválido, expirado, ou tiver issuer/tipo diferentes do esperado
     public String extractSubject(String token) {
         try {
-            return Jwts.parserBuilder()
+            io.jsonwebtoken.Claims claims = Jwts.parserBuilder()
                     .setSigningKey(getChaveAssinatura())
+                    .requireIssuer(ISSUER)
+                    .require("type", TIPO_ACCESS)
                     .build()
                     .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+                    .getBody();
+            return claims.getSubject();
         } catch (Exception e) {
             return null;
         }
     }
 
-    /**
-     * Valida se o token é válido (sem expiração e sem erro de assinatura)
-     */
     public boolean isTokenValid(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getChaveAssinatura())
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return extractSubject(token) != null;
     }
 }
