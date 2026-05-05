@@ -287,7 +287,7 @@ Consulte os arquivos de documentação:
 
 - 🔗 GitHub: [@claudiondev](https://github.com/claudiondev)
 - 💼 LinkedIn: [Claudio Nascimento](https://linkedin.com/in/claudiondev)
-- 📧 Email: claudio.dev@example.com
+- 📧 Email: claudinhon152@gmail.com
 
 ---
 
