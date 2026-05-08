@@ -236,7 +236,7 @@ Claudio Nascimento
 
 🔗 GitHub: @claudiondev
 
-💼 LinkedIn: Claudio Nascimento
+💼 LinkedIn: linkedin.com/in/claudionascimento-dev
 
 📧 Email: claudinhon152@gmail.com
 
