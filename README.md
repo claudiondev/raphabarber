@@ -3,8 +3,8 @@
 <div align="center">
 
 ![Java](https://img.shields.io/badge/Java%2017-orange?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
@@ -14,6 +14,8 @@
 
 **Uma plataforma completa para gerenciar sua barbearia com segurança, profissionalismo e facilidade.** 💈✨
 
+[![Acesse o Sistema](https://img.shields.io/badge/Acesse_o_Sistema-Clique_Aqui-blue?style=for-the-badge&logo=vercel)](https://raphabarbercg-front.vercel.app/)
+
 </div>
 
 ---
@@ -22,7 +24,7 @@
 
 O **RaphaBarber** é um sistema Full Stack moderno desenvolvido para barbearias gerenciarem seus negócios de forma eficiente. Com autenticação segura, agendamentos inteligentes e um painel administrativo, o Rapha pode focar no que faz de melhor: cortes impecáveis! 💇
 
-> **Fase Atual:** Backend 100% funcional com toda a lógica de segurança, serviços e agendamentos implementada. 🚀
+> **Fase Atual:** Sistema completo (Frontend + Backend) com toda a lógica de segurança, serviços e agendamentos implementada e em produção. 🚀
 
 ---
 
@@ -59,26 +61,25 @@ O **RaphaBarber** é um sistema Full Stack moderno desenvolvido para barbearias 
 
 ## 🏗️ Arquitetura e Estrutura
 
-```
 raphabarber/
 ├── src/main/java/com/claudio/dev/raphabarber/
-│   ├── controller/          🌐 Endpoints HTTP
+│   ├── controller/        🌐 Endpoints HTTP
 │   │   ├── AuthController.java
 │   │   ├── ServicoController.java
 │   │   └── AgendamentoController.java
 │   │
-│   ├── service/             🧠 Lógica de Negócio
+│   ├── service/               🧠 Lógica de Negócio
 │   │   ├── UsuarioService.java
 │   │   ├── ServicoService.java
 │   │   ├── AgendamentoService.java
 │   │   └── JwtService.java
 │   │
-│   ├── repository/          🗄️ Acesso ao Banco
+│   ├── repository/           🗄️ Acesso ao Banco
 │   │   ├── UsuarioRepository.java
 │   │   ├── ServicoRepository.java
 │   │   └── AgendamentoRepository.java
 │   │
-│   ├── model/               📦 Entidades (JPA)
+│   ├── model/                📦 Entidades (JPA)
 │   │   ├── Usuario.java
 │   │   ├── Servico.java
 │   │   ├── Agendamento.java
@@ -88,24 +89,23 @@ raphabarber/
 │   └── RaphabarberApplication.java
 │
 └── src/main/resources/
-    └── application.properties    ⚙️ Configurações
-```
+└── application.properties    ⚙️ Configurações
+
 
 ### 📊 Fluxo de Dados
 
-```
 Cliente HTTP Request
-        ↓
-    Controller (Valida entrada)
-        ↓
-    Service (Lógica de negócio)
-        ↓
-    Repository (JPA)
-        ↓
-    MySQL Database
-        ↓
-    Response JSON 200/400/404
-```
+↓
+Controller (Valida entrada)
+↓
+Service (Lógica de negócio)
+↓
+Repository (JPA)
+↓
+MySQL Database
+↓
+Response JSON 200/400/404
+
 
 ---
 
@@ -151,19 +151,26 @@ Cliente HTTP Request
 | Tecnologia | Versão | Função |
 |---|---|---|
 | **Java** | 17 | Linguagem principal |
-| **Spring Boot** | 3.5.13 | Framework Web/Rest |
+| **Spring Boot** | 3.x | Framework Web/Rest |
 | **Spring Security** | 6.x | Autenticação |
-| **Spring Data JPA** | 3.5 | ORM Hibernate |
+| **Spring Data JPA** | 3.x | ORM Hibernate |
 | **JWT (JJWT)** | 0.11.5 | Tokens seguros |
 | **MySQL** | 8.0+ | Banco de dados |
 | **Maven** | 3.9+ | Build & Dependências |
 
 </div>
 
-### Database
-- **MySQL 8.0+**
-- **Hibernate (JPA)** para mapeamento objeto-relacional
-- **Queries customizadas** com `@Query`
+### Frontend
+<div align="center">
+
+| Tecnologia | Função |
+|---|---|
+| **React.js** | Interface do Usuário |
+| **Vite** | Build Tool rápida |
+| **Tailwind CSS** | Estilização Responsiva |
+| **Axios** | Consumo da API |
+
+</div>
 
 ### Segurança
 - 🔐 **Spring Security** para autenticação/autorização
@@ -182,148 +189,55 @@ Cliente HTTP Request
 - ✅ AuthController (Cadastro/Login)
 
 ### ✅ Fase 2: Coração do Negócio
-- ✅ Classe Servico (criado e tabela criada)
-- ✅ Classe Agendamento (criado e tabela criada)
-- ✅ Métodos de agendamento
-- ✅ Métodos de visualização de horários
-- ✅ Validações completas
+- ✅ Classe Servico e Agendamento
+- ✅ Métodos de agendamento e visualização de horários
+- ✅ Validações de conflito de horários
 
-### ⏳ Fase 3: Interface (Frontend)
-- ⏳ Projeto React
-- ⏳ Tailwind CSS
-- ⏳ Página inicial pública
-- ⏳ Tela de login/cadastro
-- ⏳ Painel de agendamentos
+### ✅ Fase 3: Interface (Frontend)
+- ✅ Projeto React com Vite e Tailwind CSS
+- ✅ Tela de login/cadastro integrada ao JWT
+- ✅ Painel de agendamentos funcional (Admin e Cliente)
+- ✅ Consumo de rotas protegidas com Axios
 
-### ⏳ Fase 4: Lançamento
-- ⏳ Deploy do banco (Railway/AWS)
-- ⏳ Deploy da API (Railway/Heroku)
-- ⏳ Deploy do Frontend (Vercel/Netlify)
-- ⏳ Testes em produção
+### ✅ Fase 4: Lançamento
+- ✅ Deploy do banco e API (Railway)
+- ✅ Deploy do Frontend (Vercel)
+- ✅ Vídeo de demonstração (LinkedIn)
 
 ---
 
-## 🧪 Como Testar os Endpoints
+## 🧪 Como Testar Localmente
 
 ### Pré-requisitos
 - MySQL rodando localmente
-- Postman ou Insomnia instalado
 - Java 17+
+- Node.js instalado
 
 ### Configuração Rápida
 
 1. **Clone o repositório:**
 ```bash
-git clone https://github.com/claudiondev/raphabarber.git
-cd raphabarber
-```
+git clone [https://github.com/claudiondev/raphabarber.git](https://github.com/claudiondev/raphabarber.git)
+Backend: Configure o application.properties com suas credenciais do MySQL e rode:
 
-2. **Configure o banco de dados** (em `application.properties`):
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/raphabarber
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
-```
-
-3. **Compile e rode:**
-```bash
+Bash
 ./mvnw spring-boot:run
-```
+Frontend:
 
-4. **Teste os endpoints:**
-- 📍 URL base: `http://localhost:8080`
-- 📄 Veja o arquivo `GUIA_TESTES_POSTMAN.md` para exemplos completos
+Bash
+npm install
+npm run dev
+👨‍💻 Autor
+Claudio Nascimento
 
----
+🔗 GitHub: @claudiondev
 
-## 📚 Conceitos Implementados
+💼 LinkedIn: Claudio Nascimento
 
-### Backend Architecture
-- 🏗️ **MVC Pattern** - Model, View, Controller
-- 🔄 **RESTful API Design** - GET, POST, PUT, DELETE
-- 🧩 **Dependency Injection** - Spring IoC
-- 🛡️ **Exception Handling** - Try-catch com ResponseEntity
-- ✅ **Validação em Camadas** - Controller → Service → Repository
+📧 Email: claudinhon152@gmail.com
 
-### Banco de Dados
-- 📊 **ORM com JPA/Hibernate** - Mapeamento automático
-- 🔗 **Relacionamentos** - @ManyToOne, @OneToMany
-- 📅 **Timestamps** - @PrePersist, @PreUpdate
-- 🔍 **Queries Customizadas** - @Query com JPQL
+⭐ Se este projeto foi útil, deixe uma star! ⭐
 
-### Segurança
-- 🔐 **Autenticação com JWT** - Stateless, escalável
-- 👥 **Autorização por Roles** - ADMIN, CLIENTE
-- 🔒 **Criptografia de Senha** - BCrypt
-- 🛡️ **CSRF Protection** - Spring Security default
+Desenvolvido para a RaphaBarber!
 
----
-
-## 🎓 Aprendizados Principais
-
-Este projeto demonstra:
-- ✅ Desenvolvimento Full Stack moderno
-- ✅ API RESTful profissional
-- ✅ Autenticação segura com JWT
-- ✅ Validações robustas
-- ✅ Boas práticas de código limpo
-- ✅ Tratamento de erros apropriado
-- ✅ Organização em camadas (Controller/Service/Repository)
-
----
-
-## 📞 Suporte
-
-### Dúvidas sobre implementação?
-Consulte os arquivos de documentação:
-- 📖 `GUIA_TESTES_POSTMAN.md` - Exemplos de requisições
-- 📚 `EXPLICACAO_ATUALIZACOES_FASE2B.md` - Detalhes técnicos
-
----
-
-## 👨‍💻 Autor
-
-**Claudio Nascimento**
-
-- 🔗 GitHub: [@claudiondev](https://github.com/claudiondev)
-- 💼 LinkedIn: [Claudio Nascimento](https://linkedin.com/in/claudiondev)
-- 📧 Email: claudinhon152@gmail.com
-
----
-
-## 📄 Licença - ⚠️ IMPORTANTE
-
-**LICENÇA PROPRIETÁRIA - VISUALIZAÇÃO APENAS**
-
-Este código é um **projeto de portfólio** protegido por direitos autorais.
-
-### ✅ Permitido:
-- 👀 Visualizar e estudar o código
-- 💼 Usar como referência em entrevistas
-- 📚 Aprender com as implementações
-
-### ❌ Proibido:
-- 🚫 Copiar ou usar comercialmente
-- 🚫 Criar sistemas concorrentes
-- 🚫 Distribuir sem permissão
-- 🚫 Remover avisos de copyright
-
-**Para uso comercial:** Entre em contato com o autor
-
-📖 Veja o arquivo `LICENSE.md` para termos completos.
-
-```
-Copyright © 2026 Claudio Nascimento. Todos os direitos reservados.
-```
-
----
-
-<div align="center">
-
-### ⭐ Se este projeto foi útil, deixe uma star! ⭐
-
-**Desenvolvido com ❤️ para a RaphaBarber**
-
-*Status: 🟢 Production Ready | Última atualização: 2026-04-16*
-
-</div>
+Status: 🟢 Production Ready | Última atualização: Maio de 2026
