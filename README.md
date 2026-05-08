@@ -227,6 +227,10 @@ Frontend:
 Bash
 npm install
 npm run dev
+
+
+
+
 👨‍💻 Autor
 Claudio Nascimento
 
