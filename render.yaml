@@ -1,0 +1,60 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec) - descreve a API + o banco Postgres
+# gerenciado. No painel do Render: New > Blueprint > selecione este repositório > ele lê este arquivo.
+#
+# O Render não oferece MySQL gerenciado, só PostgreSQL - por isso o projeto usa Postgres em produção
+# (ver Dockerfile e docker-compose.yml, que seguem o mesmo esquema de variáveis).
+#
+# Planos "free": o serviço web dorme após ~15 min sem tráfego (primeira requisição depois demora para
+# "acordar") e o banco Postgres gratuito expira 30 dias após a criação, precisando ser recriado/promovido
+# a um plano pago. Ok para portfólio/demonstração, não para produção real.
+
+databases:
+  - name: raphabarber-db
+    plan: free
+    databaseName: raphabarber
+    user: raphabarber
+
+services:
+  - name: raphabarber-api
+    type: web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /servicos
+    envVars:
+      # host/porta/nome do banco chegam separados (não como uma URL JDBC pronta) porque é assim que o
+      # Render os expõe - o Dockerfile monta a URL final a partir dessas três variáveis.
+      - key: DB_HOST
+        fromDatabase:
+          name: raphabarber-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: raphabarber-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: raphabarber-db
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: raphabarber-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: raphabarber-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      # gerado automaticamente pelo Render na criação do blueprint (256 bits, bem acima do mínimo de 32
+      # bytes exigido por JwtService) - nunca aparece no repositório
+      - key: API_SECURITY_TOKEN_SECRET
+        generateValue: true
+      # sync: false = o Render pede esse valor uma vez, na criação do blueprint, e não versiona no arquivo
+      - key: APP_ADMIN_EMAIL
+        sync: false
+      - key: APP_ADMIN_PASSWORD
+        sync: false
+      # troque pelo domínio real do frontend em produção se for diferente
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://raphabarbercg-front.vercel.app

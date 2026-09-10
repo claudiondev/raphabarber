@@ -5,11 +5,11 @@
 ![Java](https://img.shields.io/badge/Java%2017-orange?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
 
-![Status](https://img.shields.io/badge/Status-✅%20Production%20Ready-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-🚧%20Backend%20em%20deploy-yellow?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 [![CI](https://github.com/claudiondev/raphabarber/actions/workflows/ci.yml/badge.svg)](https://github.com/claudiondev/raphabarber/actions/workflows/ci.yml)
@@ -26,7 +26,7 @@
 
 O **RaphaBarber** é um sistema Full Stack moderno desenvolvido para barbearias gerenciarem seus negócios de forma eficiente. Com autenticação segura, agendamentos inteligentes e um painel administrativo, o Rapha pode focar no que faz de melhor: cortes impecáveis! 💇
 
-> **Fase Atual:** Sistema completo (Frontend + Backend) com toda a lógica de segurança, serviços e agendamentos implementada e em produção. 🚀
+> **Fase Atual:** Backend completo (segurança, serviços e agendamentos implementados e testados) e frontend em produção no Vercel. Deploy do backend em andamento (Render). 🚀
 
 ---
 
@@ -104,7 +104,7 @@ Service (Lógica de negócio)
 ↓
 Repository (JPA)
 ↓
-MySQL Database
+PostgreSQL Database
 ↓
 Response JSON 200/400/404
 
@@ -153,13 +153,13 @@ Response JSON 200/400/404
 ./mvnw test
 ```
 
-Suíte com testes unitários (regras de negócio, isolados com Mockito) e de integração (`MockMvc` batendo nos endpoints de verdade, com H2 em memória — não precisa de MySQL local). Detalhes de cobertura e estratégia em [`TESTES.md`](TESTES.md).
+Suíte com testes unitários (regras de negócio, isolados com Mockito) e de integração (`MockMvc` batendo nos endpoints de verdade, com H2 em memória — não precisa de PostgreSQL local). Detalhes de cobertura e estratégia em [`TESTES.md`](TESTES.md).
 
 ---
 
 ## 🐳 Rodando com Docker
 
-Sobe a API + MySQL com um único comando, sem precisar instalar Java/Maven/MySQL localmente:
+Sobe a API + PostgreSQL com um único comando, sem precisar instalar Java/Maven/Postgres localmente:
 
 ```bash
 cp .env.example .env   # preencha JWT_SECRET, ADMIN_EMAIL e ADMIN_PASSWORD
@@ -167,6 +167,20 @@ docker compose up --build
 ```
 
 A API fica disponível em `http://localhost:8080` e o Swagger em `http://localhost:8080/swagger-ui/index.html`.
+
+---
+
+## ☁️ Deploy no Render
+
+O repositório tem um [`render.yaml`](render.yaml) (Blueprint) descrevendo a API (via Docker) + um banco PostgreSQL gerenciado:
+
+1. Suba o repositório no GitHub (se ainda não estiver lá).
+2. No painel do Render: **New > Blueprint**, selecione o repositório.
+3. O Render lê o `render.yaml` e pede os dois valores que não ficam no arquivo: `APP_ADMIN_EMAIL` e `APP_ADMIN_PASSWORD` (credenciais do admin/Rapha, criadas automaticamente no primeiro start).
+4. Clique em **Apply** — ele provisiona o banco, builda a imagem Docker e sobe a API.
+5. Se o domínio do frontend em produção mudar, atualize `CORS_ALLOWED_ORIGINS` no `render.yaml` (ou direto nas variáveis de ambiente do serviço, pelo painel).
+
+> **Plano gratuito:** o serviço web "dorme" depois de ~15 min sem tráfego (a primeira requisição depois demora para responder) e o banco Postgres free expira 30 dias após criado. Tranquilo para portfólio/demonstração — para produção de verdade, migre para um plano pago antes.
 
 ---
 
@@ -182,11 +196,11 @@ A API fica disponível em `http://localhost:8080` e o Swagger em `http://localho
 | **Spring Security** | 6.x | Autenticação |
 | **Spring Data JPA** | 3.x | ORM Hibernate |
 | **JWT (JJWT)** | 0.11.5 | Tokens seguros |
-| **MySQL** | 8.0+ | Banco de dados |
+| **PostgreSQL** | 16 | Banco de dados |
 | **Maven** | 3.9+ | Build & Dependências |
 | **springdoc-openapi** | 2.9.1 | Documentação interativa (Swagger UI) |
 | **JUnit 5 + Mockito + H2** | - | Testes unitários e de integração |
-| **Docker Compose** | - | Ambiente local (API + MySQL) |
+| **Docker Compose** | - | Ambiente local (API + PostgreSQL) |
 
 </div>
 
@@ -214,7 +228,7 @@ A API fica disponível em `http://localhost:8080` e o Swagger em `http://localho
 
 ### ✅ Fase 1: Motor e Segurança
 - ✅ Repositório e dependências
-- ✅ Banco de dados MySQL
+- ✅ Banco de dados PostgreSQL
 - ✅ Spring Security + JWT
 - ✅ AuthController (Cadastro/Login)
 
@@ -229,8 +243,8 @@ A API fica disponível em `http://localhost:8080` e o Swagger em `http://localho
 - ✅ Painel de agendamentos funcional (Admin e Cliente)
 - ✅ Consumo de rotas protegidas com Axios
 
-### ✅ Fase 4: Lançamento
-- ✅ Deploy do banco e API (Railway)
+### 🔜 Fase 4: Lançamento
+- 🔜 Deploy do banco e API (Render) — em andamento
 - ✅ Deploy do Frontend (Vercel)
 - ✅ Vídeo de demonstração (LinkedIn)
 
@@ -238,7 +252,7 @@ A API fica disponível em `http://localhost:8080` e o Swagger em `http://localho
 - ✅ Correção do conflito de horário (agora considera a duração do serviço, não só o timestamp exato)
 - ✅ Suíte de testes automatizados (unitários + integração, veja [`TESTES.md`](TESTES.md))
 - ✅ Documentação interativa da API (Swagger/OpenAPI)
-- ✅ Ambiente local com Docker Compose (API + MySQL)
+- ✅ Ambiente local com Docker Compose (API + PostgreSQL)
 - ✅ Integração contínua (GitHub Actions)
 
 ---
@@ -246,7 +260,7 @@ A API fica disponível em `http://localhost:8080` e o Swagger em `http://localho
 ## 🧪 Como Testar Localmente
 
 ### Pré-requisitos
-- MySQL rodando localmente
+- PostgreSQL rodando localmente (ou pule isso e use `docker compose up` — veja a seção acima)
 - Java 17+
 - Node.js instalado
 
@@ -255,7 +269,7 @@ A API fica disponível em `http://localhost:8080` e o Swagger em `http://localho
 1. **Clone o repositório:**
 ```bash
 git clone [https://github.com/claudiondev/raphabarber.git](https://github.com/claudiondev/raphabarber.git)
-Backend: Configure o application.properties com suas credenciais do MySQL e rode:
+Backend: Configure o application.properties com suas credenciais do PostgreSQL e rode:
 
 Bash
 ./mvnw spring-boot:run
@@ -281,4 +295,4 @@ Claudio Nascimento
 
 Desenvolvido para a RaphaBarber!
 
-Status: 🟢 Production Ready | Última atualização: Maio de 2026
+Status: 🚧 Backend em deploy (Render) | Última atualização: Setembro de 2026

@@ -23,12 +23,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a WHERE a.cliente = :cliente AND a.status != 'CANCELADO'")
     List<Agendamento> findAtivosDoCliente(@Param("cliente") Usuario cliente);
 
-    // Buscar agendamentos dentro de um intervalo de data - JOIN FETCH evita N+1 ao serializar o serviço de cada agendamento
-    @Query("SELECT a FROM Agendamento a JOIN FETCH a.servico WHERE DATE(a.dataHora) = :data AND a.status != 'CANCELADO' ORDER BY a.dataHora")
+    // Buscar agendamentos dentro de um intervalo de data - JOIN FETCH evita N+1 ao serializar o serviço de cada agendamento.
+    // CAST(... AS date) em vez de DATE(...): "DATE()" é função do MySQL e não existe no PostgreSQL -
+    // CAST é a forma portável entre os dois dialetos (e também funciona no H2 usado nos testes).
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.servico WHERE CAST(a.dataHora AS date) = :data AND a.status != 'CANCELADO' ORDER BY a.dataHora")
     List<Agendamento> findByData(@Param("data") LocalDate data);
 
     // Buscar agendamentos do cliente em um período
-    @Query("SELECT a FROM Agendamento a WHERE a.cliente = :cliente AND DATE(a.dataHora) >= :dataInicio AND DATE(a.dataHora) <= :dataFim ORDER BY a.dataHora")
+    @Query("SELECT a FROM Agendamento a WHERE a.cliente = :cliente AND CAST(a.dataHora AS date) >= :dataInicio AND CAST(a.dataHora AS date) <= :dataFim ORDER BY a.dataHora")
     List<Agendamento> findByClienteAndPeriodo(
         @Param("cliente") Usuario cliente,
         @Param("dataInicio") LocalDate dataInicio,

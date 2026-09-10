@@ -1,21 +1,24 @@
-# Sobe a API + MySQL para desenvolvimento local. Nenhum segredo real aqui - tudo vem do .env
+# Sobe a API + PostgreSQL para desenvolvimento local. Nenhum segredo real aqui - tudo vem do .env
 # (copie .env.example para .env e preencha). Ver README.md > "Rodando com Docker".
+#
+# DB_HOST/DB_PORT/DB_NAME + SPRING_DATASOURCE_USERNAME/PASSWORD (em vez de uma SPRING_DATASOURCE_URL pronta)
+# porque é assim que o Render injeta os dados do Postgres gerenciado em produção (ver render.yaml) - o
+# Dockerfile monta a URL JDBC a partir dessas variáveis, então local e produção usam o mesmo mecanismo.
 
 services:
-  mysql:
-    image: mysql:8.0
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root}"
-      MYSQL_DATABASE: "${DB_NAME:-raphabarber}"
-      MYSQL_USER: "${DB_USERNAME:-raphabarber}"
-      MYSQL_PASSWORD: "${DB_PASSWORD:-raphabarber}"
+      POSTGRES_DB: "${DB_NAME:-raphabarber}"
+      POSTGRES_USER: "${DB_USERNAME:-raphabarber}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-raphabarber}"
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-raphabarber} -d ${DB_NAME:-raphabarber}"]
       interval: 5s
       timeout: 5s
       retries: 15
@@ -24,11 +27,12 @@ services:
     build: .
     restart: unless-stopped
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     environment:
-      # nomes reconhecidos pelo Spring (relaxed binding) - dispensam um application.properties dentro da imagem
-      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${DB_NAME:-raphabarber}?createDatabaseIfNotExist=true&serverTimezone=UTC"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: "${DB_NAME:-raphabarber}"
       SPRING_DATASOURCE_USERNAME: "${DB_USERNAME:-raphabarber}"
       SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:-raphabarber}"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
@@ -40,4 +44,4 @@ services:
       - "8080:8080"
 
 volumes:
-  mysql_data:
+  postgres_data:

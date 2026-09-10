@@ -20,4 +20,8 @@ USER spring
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# DB_HOST/DB_PORT/DB_NAME chegam separados (é assim que o Render injeta os dados do Postgres gerenciado -
+# ver render.yaml) e são montados aqui na URL JDBC completa. "exec" no final faz o java substituir o
+# processo do shell, para sinais como SIGTERM (parada/redeploy) chegarem direto na JVM.
+ENTRYPOINT ["sh", "-c", "exec java -jar app.jar --spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"]
