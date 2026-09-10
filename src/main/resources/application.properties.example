@@ -6,7 +6,7 @@
 spring.datasource.url=jdbc:mysql://localhost:3306/NOME_DO_BANCO?createDatabaseIfNotExist=true&serverTimezone=UTC
 spring.datasource.username=${DB_USERNAME}
 spring.datasource.password=${DB_PASSWORD}
-spring.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 # Configurações do Hibernate / JPA
 spring.jpa.hibernate.ddl-auto=update

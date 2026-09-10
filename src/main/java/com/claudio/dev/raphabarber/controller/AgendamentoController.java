@@ -4,6 +4,8 @@ import com.claudio.dev.raphabarber.exception.AcessoNegadoException;
 import com.claudio.dev.raphabarber.model.Agendamento;
 import com.claudio.dev.raphabarber.model.Usuario;
 import com.claudio.dev.raphabarber.service.AgendamentoService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/agendamentos")
+@Tag(name = "Agendamentos", description = "Todos os endpoints exigem autenticação")
+@SecurityRequirement(name = "bearerAuth")
 public class AgendamentoController {
     private final AgendamentoService agendamentoService;
 

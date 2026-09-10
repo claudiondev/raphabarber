@@ -1,0 +1,43 @@
+# Sobe a API + MySQL para desenvolvimento local. Nenhum segredo real aqui - tudo vem do .env
+# (copie .env.example para .env e preencha). Ver README.md > "Rodando com Docker".
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root}"
+      MYSQL_DATABASE: "${DB_NAME:-raphabarber}"
+      MYSQL_USER: "${DB_USERNAME:-raphabarber}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-raphabarber}"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # nomes reconhecidos pelo Spring (relaxed binding) - dispensam um application.properties dentro da imagem
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${DB_NAME:-raphabarber}?createDatabaseIfNotExist=true&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME: "${DB_USERNAME:-raphabarber}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:-raphabarber}"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      API_SECURITY_TOKEN_SECRET: "${JWT_SECRET:?defina JWT_SECRET no .env (gere com: openssl rand -base64 32)}"
+      APP_ADMIN_EMAIL: "${ADMIN_EMAIL:?defina ADMIN_EMAIL no .env}"
+      APP_ADMIN_PASSWORD: "${ADMIN_PASSWORD:?defina ADMIN_PASSWORD no .env}"
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-http://localhost:5173}"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

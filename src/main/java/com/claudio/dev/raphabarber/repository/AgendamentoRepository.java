@@ -23,8 +23,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a WHERE a.cliente = :cliente AND a.status != 'CANCELADO'")
     List<Agendamento> findAtivosDoCliente(@Param("cliente") Usuario cliente);
 
-    // Buscar agendamentos dentro de um intervalo de data
-    @Query("SELECT a FROM Agendamento a WHERE DATE(a.dataHora) = :data AND a.status != 'CANCELADO' ORDER BY a.dataHora")
+    // Buscar agendamentos dentro de um intervalo de data - JOIN FETCH evita N+1 ao serializar o serviço de cada agendamento
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.servico WHERE DATE(a.dataHora) = :data AND a.status != 'CANCELADO' ORDER BY a.dataHora")
     List<Agendamento> findByData(@Param("data") LocalDate data);
 
     // Buscar agendamentos do cliente em um período
@@ -35,7 +35,9 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         @Param("dataFim") LocalDate dataFim
     );
 
-    // Verificar se há agendamento no horário específico
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.dataHora = :dataHora AND a.status != 'CANCELADO'")
-    boolean existsAgendamentoNoHorario(@Param("dataHora") LocalDateTime dataHora);
+    // Candidatos a conflito de horário: todos os agendamentos ativos com início dentro da janela informada.
+    // O cálculo de overlap real (que depende da duração de cada serviço) é feito em memória no AgendamentoService -
+    // JPQL portável (H2/MySQL) não tem como comparar "dataHora + duracaoMinutos" de forma segura entre os dois dialetos.
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.servico WHERE a.status != 'CANCELADO' AND a.dataHora BETWEEN :inicioJanela AND :fimJanela ORDER BY a.dataHora")
+    List<Agendamento> findAtivosNoIntervalo(@Param("inicioJanela") LocalDateTime inicioJanela, @Param("fimJanela") LocalDateTime fimJanela);
 }

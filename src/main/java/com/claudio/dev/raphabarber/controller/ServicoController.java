@@ -2,6 +2,9 @@ package com.claudio.dev.raphabarber.controller;
 
 import com.claudio.dev.raphabarber.model.Servico;
 import com.claudio.dev.raphabarber.service.ServicoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/servicos")
+@Tag(name = "Serviços", description = "Catálogo de serviços da barbearia - leitura pública, escrita restrita a ADMIN")
 public class ServicoController {
     private final ServicoService servicoService;
 
@@ -34,6 +38,7 @@ public class ServicoController {
     }
 
     // Body: { "nome": "Corte de Cabelo", "duracaoMinutos": 30, "preco": 50.00, "descricao": "..." }
+    @Operation(summary = "Criar serviço", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
     public ResponseEntity<?> criarServico(@Valid @RequestBody Servico servico) {
         try {
@@ -45,6 +50,7 @@ public class ServicoController {
     }
 
     // update parcial: só altera os campos enviados no body, por isso não usa @Valid aqui
+    @Operation(summary = "Atualizar serviço (parcial)", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizarServico(
             @PathVariable Long id,
@@ -57,6 +63,7 @@ public class ServicoController {
         }
     }
 
+    @Operation(summary = "Excluir serviço", security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarServico(@PathVariable Long id) {
         try {

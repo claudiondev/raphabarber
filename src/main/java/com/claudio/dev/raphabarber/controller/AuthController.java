@@ -4,6 +4,8 @@ import com.claudio.dev.raphabarber.model.Usuario;
 import com.claudio.dev.raphabarber.repository.UsuarioRepository;
 import com.claudio.dev.raphabarber.service.JwtService;
 import com.claudio.dev.raphabarber.service.RateLimiterService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticação", description = "Registro e login - endpoints públicos, com rate limiting por IP")
 public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -27,6 +30,7 @@ public class AuthController {
     @Autowired
     private RateLimiterService rateLimiterService;
 
+    @Operation(summary = "Registrar novo cliente", description = "Cria uma conta com role CLIENTE. Limite de 5 tentativas a cada 15 min por IP.")
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(@Valid @RequestBody Usuario usuario, HttpServletRequest request) {
         String ip = request.getRemoteAddr();
@@ -43,6 +47,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("mensagem", "Usuário registrado com sucesso!"));
     }
 
+    @Operation(summary = "Login", description = "Retorna um JWT válido por 24h. Limite de 5 tentativas a cada 15 min por IP.")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario, HttpServletRequest request) {
         String ip = request.getRemoteAddr();

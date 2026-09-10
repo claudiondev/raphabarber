@@ -2,6 +2,7 @@ package com.claudio.dev.raphabarber.service;
 
 import com.claudio.dev.raphabarber.exception.AcessoNegadoException;
 import com.claudio.dev.raphabarber.model.Agendamento;
+import com.claudio.dev.raphabarber.model.Servico;
 import com.claudio.dev.raphabarber.model.StatusAgendamento;
 import com.claudio.dev.raphabarber.model.Usuario;
 import com.claudio.dev.raphabarber.model.UserRole;
@@ -11,13 +12,20 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AgendamentoService {
-    private final AgendamentoRepository agendamentoRepository;
+    // Limite superior assumido para a duração de qualquer serviço - define o quão "para trás" a busca de
+    // conflitos precisa olhar (cobre inclusive um agendamento que começou no dia anterior e viraria a meia-noite).
+    private static final int DURACAO_MAXIMA_ASSUMIDA_MINUTOS = 360;
 
-    public AgendamentoService(AgendamentoRepository agendamentoRepository) {
+    private final AgendamentoRepository agendamentoRepository;
+    private final ServicoService servicoService;
+
+    public AgendamentoService(AgendamentoRepository agendamentoRepository, ServicoService servicoService) {
         this.agendamentoRepository = agendamentoRepository;
+        this.servicoService = servicoService;
     }
 
     public List<Agendamento> listarTodos(Usuario usuarioLogado) {
@@ -43,9 +51,12 @@ public class AgendamentoService {
         // ignora qualquer "cliente" vindo no body - o dono é sempre quem está autenticado
         agendamento.setCliente(usuarioLogado);
 
+        // carrega o serviço de verdade (o body só traz o id) - garante que ele existe e nos dá a duração real
+        Servico servico = carregarServico(agendamento.getServico());
+        agendamento.setServico(servico);
+
         validarDataFutura(agendamento.getDataHora());
-        validarDisponibilidade(agendamento.getDataHora());
-        validarServico(agendamento.getServico());
+        validarDisponibilidade(agendamento.getDataHora(), servico.getDuracaoMinutos(), null);
 
         return agendamentoRepository.save(agendamento);
     }
@@ -57,7 +68,8 @@ public class AgendamentoService {
         // update parcial: só altera os campos que vieram preenchidos no body
         if (agendamentoAtualizado.getDataHora() != null && !agendamento.getDataHora().equals(agendamentoAtualizado.getDataHora())) {
             validarDataFutura(agendamentoAtualizado.getDataHora());
-            validarDisponibilidade(agendamentoAtualizado.getDataHora());
+            // duração vem do serviço já persistido - esta atualização não permite trocar o serviço
+            validarDisponibilidade(agendamentoAtualizado.getDataHora(), agendamento.getServico().getDuracaoMinutos(), agendamento.getId());
             agendamento.setDataHora(agendamentoAtualizado.getDataHora());
         }
 
@@ -101,17 +113,33 @@ public class AgendamentoService {
         }
     }
 
-    private void validarDisponibilidade(LocalDateTime dataHora) {
-        boolean existe = agendamentoRepository.existsAgendamentoNoHorario(dataHora);
-        if (existe) {
-            throw new RuntimeException("Este horário já está ocupado!");
+    // Conflito real de horário: considera a duração de cada serviço, não só o timestamp de início.
+    // idParaIgnorar é o próprio agendamento sendo atualizado (null na criação, onde nada deve ser ignorado).
+    private void validarDisponibilidade(LocalDateTime inicio, Integer duracaoMinutos, Long idParaIgnorar) {
+        LocalDateTime fim = inicio.plusMinutes(duracaoMinutos);
+        LocalDateTime inicioJanela = inicio.minusMinutes(DURACAO_MAXIMA_ASSUMIDA_MINUTOS);
+
+        List<Agendamento> candidatos = agendamentoRepository.findAtivosNoIntervalo(inicioJanela, fim);
+
+        boolean conflito = candidatos.stream()
+                .filter(a -> !Objects.equals(a.getId(), idParaIgnorar))
+                .anyMatch(a -> {
+                    LocalDateTime existenteFim = a.getDataHora().plusMinutes(a.getServico().getDuracaoMinutos());
+                    return inicio.isBefore(existenteFim) && a.getDataHora().isBefore(fim);
+                });
+
+        if (conflito) {
+            throw new RuntimeException("Este horário conflita com outro agendamento já existente!");
         }
     }
 
-    private void validarServico(com.claudio.dev.raphabarber.model.Servico servico) {
-        if (servico == null || servico.getId() == null) {
+    // Busca o serviço de verdade no banco - o body da requisição só traz o id (ex: { "servico": { "id": 2 } }).
+    // Também garante que o id enviado realmente existe, evitando um erro de constraint no banco mais adiante.
+    private Servico carregarServico(Servico servicoRecebido) {
+        if (servicoRecebido == null || servicoRecebido.getId() == null) {
             throw new RuntimeException("Serviço inválido!");
         }
+        return servicoService.buscarPorId(servicoRecebido.getId());
     }
 
     private boolean isAdmin(Usuario usuario) {

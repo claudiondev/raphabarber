@@ -12,6 +12,8 @@
 ![Status](https://img.shields.io/badge/Status-✅%20Production%20Ready-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
+[![CI](https://github.com/claudiondev/raphabarber/actions/workflows/ci.yml/badge.svg)](https://github.com/claudiondev/raphabarber/actions/workflows/ci.yml)
+
 **Uma plataforma completa para gerenciar sua barbearia com segurança, profissionalismo e facilidade.** 💈✨
 
 [![Acesse o Sistema](https://img.shields.io/badge/Acesse_o_Sistema-Clique_Aqui-blue?style=for-the-badge&logo=vercel)](https://raphabarbercg-front.vercel.app/)
@@ -141,6 +143,31 @@ Response JSON 200/400/404
 
 ⭐ Requer autenticação (token JWT)
 
+📄 **Documentação interativa:** com o backend rodando, acesse `http://localhost:8080/swagger-ui/index.html` para ver e testar todos os endpoints (Swagger/OpenAPI). Clique em **Authorize** e informe `Bearer {seu_token}` para testar rotas protegidas direto pela interface.
+
+---
+
+## 🧪 Testes automatizados
+
+```bash
+./mvnw test
+```
+
+Suíte com testes unitários (regras de negócio, isolados com Mockito) e de integração (`MockMvc` batendo nos endpoints de verdade, com H2 em memória — não precisa de MySQL local). Detalhes de cobertura e estratégia em [`TESTES.md`](TESTES.md).
+
+---
+
+## 🐳 Rodando com Docker
+
+Sobe a API + MySQL com um único comando, sem precisar instalar Java/Maven/MySQL localmente:
+
+```bash
+cp .env.example .env   # preencha JWT_SECRET, ADMIN_EMAIL e ADMIN_PASSWORD
+docker compose up --build
+```
+
+A API fica disponível em `http://localhost:8080` e o Swagger em `http://localhost:8080/swagger-ui/index.html`.
+
 ---
 
 ## 🚀 Tecnologias Stack
@@ -157,6 +184,9 @@ Response JSON 200/400/404
 | **JWT (JJWT)** | 0.11.5 | Tokens seguros |
 | **MySQL** | 8.0+ | Banco de dados |
 | **Maven** | 3.9+ | Build & Dependências |
+| **springdoc-openapi** | 2.9.1 | Documentação interativa (Swagger UI) |
+| **JUnit 5 + Mockito + H2** | - | Testes unitários e de integração |
+| **Docker Compose** | - | Ambiente local (API + MySQL) |
 
 </div>
 
@@ -203,6 +233,13 @@ Response JSON 200/400/404
 - ✅ Deploy do banco e API (Railway)
 - ✅ Deploy do Frontend (Vercel)
 - ✅ Vídeo de demonstração (LinkedIn)
+
+### ✅ Fase 5: Fundação de Qualidade
+- ✅ Correção do conflito de horário (agora considera a duração do serviço, não só o timestamp exato)
+- ✅ Suíte de testes automatizados (unitários + integração, veja [`TESTES.md`](TESTES.md))
+- ✅ Documentação interativa da API (Swagger/OpenAPI)
+- ✅ Ambiente local com Docker Compose (API + MySQL)
+- ✅ Integração contínua (GitHub Actions)
 
 ---
 
