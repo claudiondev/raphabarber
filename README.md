@@ -9,7 +9,7 @@
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
 
-![Status](https://img.shields.io/badge/Status-🚧%20Backend%20em%20deploy-yellow?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-✅%20Production%20Ready-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 [![CI](https://github.com/claudiondev/raphabarber/actions/workflows/ci.yml/badge.svg)](https://github.com/claudiondev/raphabarber/actions/workflows/ci.yml)
@@ -26,7 +26,7 @@
 
 O **RaphaBarber** é um sistema Full Stack moderno desenvolvido para barbearias gerenciarem seus negócios de forma eficiente. Com autenticação segura, agendamentos inteligentes e um painel administrativo, o Rapha pode focar no que faz de melhor: cortes impecáveis! 💇
 
-> **Fase Atual:** Backend completo (segurança, serviços e agendamentos implementados e testados) e frontend em produção no Vercel. Deploy do backend em andamento (Render). 🚀
+> **Fase Atual:** Sistema completo (Frontend + Backend) com toda a lógica de segurança, serviços e agendamentos implementada e em produção — backend no Render, frontend na Vercel. 🚀
 
 ---
 
@@ -37,7 +37,12 @@ O **RaphaBarber** é um sistema Full Stack moderno desenvolvido para barbearias 
 - ✅ Login com geração de **JWT Token**
 - ✅ Senhas criptografadas (bcrypt)
 - ✅ Controle de acesso por Roles (ADMIN/CLIENTE)
-- ✅ Token com expiração de 1 hora
+- ✅ Token com expiração de 24 horas
+- ✅ Rate limiting por IP em `/auth/registrar` e `/auth/login` (5 tentativas a cada 15 min, depois retorna 429)
+
+### 🖼️ Portfólio
+- ✅ Galeria de cortes da barbearia (leitura pública, escrita restrita a ADMIN)
+- ✅ Validação da URL da imagem (precisa ser `https` e apontar para png/jpg/jpeg/webp/gif)
 
 ### ✂️ Gerenciamento de Serviços
 - ✅ CRUD completo de serviços
@@ -68,25 +73,40 @@ raphabarber/
 │   ├── controller/        🌐 Endpoints HTTP
 │   │   ├── AuthController.java
 │   │   ├── ServicoController.java
-│   │   └── AgendamentoController.java
+│   │   ├── AgendamentoController.java
+│   │   └── PortfolioController.java
 │   │
 │   ├── service/               🧠 Lógica de Negócio
 │   │   ├── UsuarioService.java
 │   │   ├── ServicoService.java
 │   │   ├── AgendamentoService.java
-│   │   └── JwtService.java
+│   │   ├── PortfolioService.java
+│   │   ├── JwtService.java
+│   │   └── RateLimiterService.java
 │   │
 │   ├── repository/           🗄️ Acesso ao Banco
 │   │   ├── UsuarioRepository.java
 │   │   ├── ServicoRepository.java
-│   │   └── AgendamentoRepository.java
+│   │   ├── AgendamentoRepository.java
+│   │   └── PortfolioRepository.java
 │   │
 │   ├── model/                📦 Entidades (JPA)
 │   │   ├── Usuario.java
 │   │   ├── Servico.java
 │   │   ├── Agendamento.java
+│   │   ├── Portfolio.java
 │   │   ├── StatusAgendamento.java
 │   │   └── UserRole.java
+│   │
+│   ├── config/                ⚙️ Configuração
+│   │   ├── SecurityConfig.java
+│   │   ├── JwtAuthenticationFilter.java
+│   │   ├── AdminSeeder.java
+│   │   └── OpenApiConfig.java
+│   │
+│   ├── exception/              🚨 Tratamento de Erros
+│   │   ├── GlobalExceptionHandler.java
+│   │   └── AcessoNegadoException.java
 │   │
 │   └── RaphabarberApplication.java
 │
@@ -130,18 +150,26 @@ Response JSON 200/400/404
 | PUT | `/servicos/{id}` | Atualizar serviço ⭐ |
 | DELETE | `/servicos/{id}` | Deletar serviço ⭐ |
 
-### 📅 **Agendamentos** (`/agendamentos`)
+### 📅 **Agendamentos** (`/agendamentos`) — todos exigem autenticação
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/agendamentos` | Listar agendamentos ativos |
-| GET | `/agendamentos/{id}` | Buscar agendamento por ID |
-| GET | `/agendamentos/dia?data=YYYY-MM-DD` | 📅 Agenda do dia (Rapha) |
+| GET | `/agendamentos` | Listar agendamentos ativos — admin vê todos, cliente vê só os seus |
+| GET | `/agendamentos/{id}` | Buscar agendamento por ID (403 se não for o dono nem admin) |
+| GET | `/agendamentos/dia?data=YYYY-MM-DD` | 📅 Agenda do dia — restrito a ADMIN (403 para cliente) |
 | POST | `/agendamentos` | Criar novo agendamento |
 | PUT | `/agendamentos/{id}` | Atualizar agendamento |
 | DELETE | `/agendamentos/{id}` | Cancelar agendamento |
 
-⭐ Requer autenticação (token JWT)
+### 🖼️ **Portfólio** (`/portfolio`)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/portfolio` | Listar itens da galeria |
+| POST | `/portfolio` | Adicionar item ⭐ |
+| DELETE | `/portfolio/{id}` | Remover item ⭐ |
+
+⭐ Requer autenticação (token JWT) com role ADMIN
 
 📄 **Documentação interativa:** com o backend rodando, acesse `http://localhost:8080/swagger-ui/index.html` para ver e testar todos os endpoints (Swagger/OpenAPI). Clique em **Authorize** e informe `Bearer {seu_token}` para testar rotas protegidas direto pela interface.
 
@@ -243,8 +271,8 @@ O repositório tem um [`render.yaml`](render.yaml) (Blueprint) descrevendo a API
 - ✅ Painel de agendamentos funcional (Admin e Cliente)
 - ✅ Consumo de rotas protegidas com Axios
 
-### 🔜 Fase 4: Lançamento
-- 🔜 Deploy do banco e API (Render) — em andamento
+### ✅ Fase 4: Lançamento
+- ✅ Deploy do banco e API (Render)
 - ✅ Deploy do Frontend (Vercel)
 - ✅ Vídeo de demonstração (LinkedIn)
 
@@ -254,6 +282,11 @@ O repositório tem um [`render.yaml`](render.yaml) (Blueprint) descrevendo a API
 - ✅ Documentação interativa da API (Swagger/OpenAPI)
 - ✅ Ambiente local com Docker Compose (API + PostgreSQL)
 - ✅ Integração contínua (GitHub Actions)
+
+### ✅ Fase 6: Portfólio e Endurecimento
+- ✅ Galeria de portfólio (leitura pública, escrita restrita a ADMIN)
+- ✅ Rate limiting por IP em login/registro
+- ✅ Migração do banco para PostgreSQL (produção no Render)
 
 ---
 
@@ -295,4 +328,4 @@ Claudio Nascimento
 
 Desenvolvido para a RaphaBarber!
 
-Status: 🚧 Backend em deploy (Render) | Última atualização: Setembro de 2026
+Status: ✅ Em produção (Backend no Render + Frontend na Vercel) | Última atualização: Setembro de 2026
